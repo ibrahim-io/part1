@@ -9,9 +9,9 @@ const App = () => {
   const [showAll, setShowAll] = useState(true)
 
   const notesToShow = showAll ? notes : notes.filter(note => note.important)
-  useEffect(() => noteService.getAll().then(response => {
-    setNotes(response.data)
-  }),[])
+  useEffect(() => noteService.getAll().then(
+    initialNotes => setNotes(initialNotes)
+  ),[])
   
 
   const addNote = (event) => {
@@ -24,8 +24,8 @@ const App = () => {
 
     noteService
       .create(noteObject)
-      .then(response => {
-        setNotes(notes.concat(response.data))
+      .then(returnedNote => {
+        setNotes(notes.concat(returnedNote))
         setNewNote('')
       })
   }
@@ -34,8 +34,13 @@ const App = () => {
     const note = notes.find(n => n.id === id)
     const changedNote = {...note, important: !note.important}
 
-    noteService.update(id,changedNote).then(response => {
-      setNotes(notes.map(n => n.id !== id ? n : response.data))
+    noteService.update(id,changedNote).then(returnedNote => {
+      setNotes(notes.map(n => n.id !== id ? n : returnedNote))
+    }).catch(error => {
+      alert(
+        `the note '${note.content}' was already deleted from the server`
+      )
+      setNotes(notes.filter(n => n.id !== id))
     })
   }
 
